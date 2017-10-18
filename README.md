@@ -6,21 +6,30 @@
 Caffe is a deep learning framework made with expression, speed, and modularity in mind.
 It is developed by Berkeley AI Research ([BAIR](http://bair.berkeley.edu))/The Berkeley Vision and Learning Center (BVLC) and community contributors.
 
-Check out the [project site](http://caffe.berkeleyvision.org) for all the details like
+## School Project
+This is For School Project. [OpenSourceSoftWare]
+### Team Member
 
-- [DIY Deep Learning for Vision with Caffe](https://docs.google.com/presentation/d/1UeKXVgRvvxg9OUdh_UiC5G71UMscNPlvArsWER41PsU/edit#slide=id.p)
-- [Tutorial Documentation](http://caffe.berkeleyvision.org/tutorial/)
-- [BAIR reference models](http://caffe.berkeleyvision.org/model_zoo.html) and the [community model zoo](https://github.com/BVLC/caffe/wiki/Model-Zoo)
-- [Installation instructions](http://caffe.berkeleyvision.org/installation.html)
+###### [ChiHyeon Ahn, dept of Computer Information Communication, Hongik Univ.](https://github.com/accomplishedboy)
 
-and step-by-step examples.
+###### [JiHoon Han, dept of Computer Information Communication, Hongik Univ.](https://github.com/Hahnnz)
+### What we will do
+At pooling step, pooling has output Max value that is biggest among activate nodes in kernel or Average value
+However, as domain goes, we cannot grant Max pooling or Ave pooling extract good feature to train data
 
-## Custom distributions
+So We Propose Another new way beside Max & Ave pooling
 
- - [Intel Caffe](https://github.com/BVLC/caffe/tree/intel) (Optimized for CPU and support for multi-node), in particular Xeon processors (HSW, BDW, SKX, Xeon Phi).
-- [OpenCL Caffe](https://github.com/BVLC/caffe/tree/opencl) e.g. for AMD or Intel devices.
-- [Windows Caffe](https://github.com/BVLC/caffe/tree/windows)
+Based on previously existing Max & Average Pooling we will Make Operation Vectorizing With adding Weights
 
+
+### What we expect from this project
+- Enable to extract MORE effective feature when learn it 
+
+   For Each Kernel node, Weights vector can weight heavily if it looks important or get lighter even get 0 to make it unable to join operation if it looks not good or bad  
+
+- It can be learned even if features we want to make it learned are weak relatively in given data 
+
+   When we make it learned object on given image, Weight vectors can weight weakly to arounds feature we don’t want to be learned, and weight strongly the feature we want
 ## Community
 
 [![Join the chat at https://gitter.im/BVLC/caffe](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BVLC/caffe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
