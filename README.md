@@ -1,8 +1,5 @@
 # Caffe
 
-[![Build Status](https://travis-ci.org/BVLC/caffe.svg?branch=master)](https://travis-ci.org/BVLC/caffe)
-[![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE)
-
 Caffe is a deep learning framework made with expression, speed, and modularity in mind.
 It is developed by Berkeley AI Research ([BAIR](http://bair.berkeley.edu))/The Berkeley Vision and Learning Center (BVLC) and community contributors.
 
@@ -10,9 +7,9 @@ It is developed by Berkeley AI Research ([BAIR](http://bair.berkeley.edu))/The B
 This is For School Project. [OpenSourceSoftWare]
 ### Team Member
 
-###### [ChiHyun Ahn, dept of Computer Information Communication Eng, Hongik Univ at Sejong.](https://github.com/accomplishedboy)
+###### [ChiHyun Ahn, dept of Computer Information Communication Eng, Hongik Univ](https://github.com/accomplishedboy)
 
-###### [JiHoon Han, dept of Computer Information Communication Eng, Hongik Univ at Sejong.](https://github.com/Hahnnz)
+###### [JiHoon Han, dept of Computer Information Communication Eng, Hongik Univ](https://github.com/Hahnnz)
 ### What we will do
 At pooling step, pooling has output Max value that is biggest among activate nodes in kernel or Average value
 However, as domain goes, we cannot grant Max pooling or Ave pooling extract good feature to train data
