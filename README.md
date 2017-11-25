@@ -27,7 +27,21 @@ Based on previously existing Max & Average Pooling we will Make Operation Vector
 - <b> It can be learned even if features we want to make it learned are weak relatively in given data </b> 
    
    When we make it learned object on given image, Weight vectors can weight weakly to arounds feature we don’t want to be learned, and weight strongly the feature we want
-
+## How To Use Vectorized Mode?
+You can use it by setting 'pool' as "VEC". see below example
+```
+layer {
+         name: "pool_layer"
+         type: "Pooling"
+         bottom: "convolution_output"
+         top: "pool_output"
+         pooling_param {
+                 pool: VEC
+                 kernel_size: 3
+                 stride: 2
+         }
+}
+```
 ## License and Citation
 
 Caffe is released under the [BSD 2-Clause license](https://github.com/BVLC/caffe/blob/master/LICENSE).
