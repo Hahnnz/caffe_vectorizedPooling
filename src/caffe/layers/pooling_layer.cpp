@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "caffe/layers/pooling_layer.hpp"
+#include "caffe/layers/conv_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -68,8 +69,10 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK(this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_AVE
         || this->layer_param_.pooling_param().pool()
-        == PoolingParameter_PoolMethod_MAX)
-        << "Padding implemented only for average and max pooling.";
+        == PoolingParameter_PoolMethod_MAX
+        || this->layer_param_.pooling_param().pool()
+        == PoolingParameter_PoolMethod_VEC)
+        << "Padding implemented only for vector, average and max pooling.";
     CHECK_LT(pad_h_, kernel_h_);
     CHECK_LT(pad_w_, kernel_w_);
   }
@@ -137,6 +140,20 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
+  case PoolingParameter_PoolMethod_VEC:
+    const Dtype* weight = this->blobs[0]->cpu_data();
+    for (int i=0;i<bottom.size();++i){
+      const Dtype* bottom_data = bottom[i]->cpu_data();
+      Dtype* top_data = top[i]->mutable_cpu_data();
+      for (int n = 0; n < this->num_; ++n){
+        this->forward_cpu_gemm(bottom_data + n * this->bottom_dim_, weight, top_data +n * this->top_dim_);
+        if(this->bias_term_) {
+	  const Dtype* bias = this->blobs_[1]->cpu_data();
+          this->forward_cpu_bias(top_data + n * this->top_dim_, bias);
+        }
+      }
+    }
+    break;
   case PoolingParameter_PoolMethod_MAX:
     // Initialize
     if (use_top_mask) {
@@ -242,6 +259,28 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   const int* mask = NULL;  // suppress warnings about uninitialized variables
   const Dtype* top_mask = NULL;
   switch (this->layer_param_.pooling_param().pool()) {
+  case PoolingParameter_PoolMethod_VEC:
+    Dtype* weight_diff = this-> blobs_[1]->mutable_cpu_diff();
+    for(int i = 0; i< top.size();++i) {
+      const Dtype* top_diff = top[i]->cpu_diff();
+      const Dtype* bottom_data = bottom[i]->cpu_data();
+      Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
+      if (this->bias_term_ && this->param_propagate_down_[1]){
+        for (int n = 0; n < this->num_; ++n){
+          this->backward_cpu_bias(bias_diff, top_diff + n * this->top_dim_);
+        }
+      }
+      if (this->param_propagate_down_[0] || propagate_down[i]) {
+        for (int n = 0; n < this->num_; ++n){
+          if (this->param_propagate_down_[0]) {
+            this->weight_cpu_gemm(bottom_data + n * this->bottom_dim_, top_diff + n * this->top_dim_, weight_diff);
+          }
+          if (propagate_down[i]) {
+            this->backward_cpu_gemm(top_diff + n * this->top_dim_,weight, bottom_diff + n * this->bottom_dim_);
+          }
+        }
+      }
+    }
   case PoolingParameter_PoolMethod_MAX:
     // The main loop
     if (use_top_mask) {
