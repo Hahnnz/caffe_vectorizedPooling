@@ -20,11 +20,11 @@ Based on previously existing Max & Average Pooling we will Make Operation Vector
 
 
 ### What we expect from this project
-<b> - Enable to extract MORE effective feature when learn it
+ - <b> Enable to extract MORE effective feature when learn it </b> 
    
    For Each Kernel node, Weights vector can weight heavily if it looks important or get lighter even get 0 to make it unable to join operation if it looks not good or bad  
 
-<b> - It can be learned even if features we want to make it learned are weak relatively in given data
+- <b> It can be learned even if features we want to make it learned are weak relatively in given data </b> 
    
    When we make it learned object on given image, Weight vectors can weight weakly to arounds feature we don’t want to be learned, and weight strongly the feature we want
 
