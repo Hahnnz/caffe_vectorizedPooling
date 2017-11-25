@@ -6,7 +6,6 @@
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
-#include "caffe/util/im2col.hpp"
 
 namespace caffe {
 
@@ -38,7 +37,7 @@ class PoolingLayer : public Layer<Dtype> {
   }
 
  protected:
-  void forward_cpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output, bool skip_im2col = false);
+  void forward_cpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output);
   void forward_cpu_bias(Dtype* output, const Dtype* bias);
   void backward_cpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
@@ -50,7 +49,7 @@ class PoolingLayer : public Layer<Dtype> {
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
 #ifndef CPU_ONLY
-  void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights, Dtype* output, bool skip_im2col = false);
+  void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights, Dtype* output);
   void forward_gpu_bias(Dtype* output, const Dtype* bias);
   void backward_gpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
   void backward_gpu_bias(Dtype* bias, const Dtype* input);
