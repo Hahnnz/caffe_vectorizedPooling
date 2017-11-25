@@ -1,9 +1,11 @@
 * Chihyun Ahn
 caffe/src/caffe/layers/pooling_layer.cpp
 caffe/src/caffe/test/test_pooling_layer.cpp
-add!!
 
 * Jihoon Han
 [WIP]
-- Adding Weighted pooling Operation at "src/caffe/layers/Pooling_Layer.cpp" 
+- Building Pooling layer
+  10 errors have remained.
 [Done]
+- Adding Basic Vectorized pooling Operation.
+  Mode Set : VEC
