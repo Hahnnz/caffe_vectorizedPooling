@@ -1,6 +1,10 @@
 * Chihyun Ahn
 caffe/src/caffe/layers/pooling_layer.cpp
 caffe/src/caffe/test/test_pooling_layer.cpp
+[Role of functions]
+cpu_data() => if there is a data modified in gpu state, return the data's address to cpu.
+mutable_cpu_data() => if there are mutable data modified in gpu state, return the data's address to cpu. 
+
 
 * Jihoon Han
 [WIP]
