@@ -4,3 +4,6 @@ caffe/src/caffe/test/test_pooling_layer.cpp
 
 
 * Jihoon Han
+[WIP]
+- Adding Weighted pooling Operation at "src/caffe/layers/Pooling_Layer.cpp" 
+[Done]
