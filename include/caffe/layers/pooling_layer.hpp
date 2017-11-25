@@ -45,7 +45,18 @@ class PoolingLayer : public Layer<Dtype> {
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
+#ifndef CPU_ONLY
+  void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights, Dtype* output, bool skip_im2col = false);
+  void forward_gpu_bias(Dtype* output, const Dtype* bias);
+  void backward_gpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
+  void backward_gpu_bias(Dtype* bias, const Dtype* input);
+#endif
 
+  int channel_axis_;
+  int bottom_dim_, top_dim_;
+  int num_, groups_;
+  int num_output_, bias_term;
+  int weight_offset_, out_spatial_dim_;
 
   int kernel_h_, kernel_w_;
   int stride_h_, stride_w_;
