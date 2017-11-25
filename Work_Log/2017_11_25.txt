@@ -1,3 +1,6 @@
 * Chihyun Ahn
+caffe/src/caffe/layers/pooling_layer.cpp
+caffe/src/caffe/test/test_pooling_layer.cpp
+
 
 * Jihoon Han
