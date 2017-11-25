@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "caffe/layers/pooling_layer.hpp"
-#include "caffe/layers/conv_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -128,9 +127,9 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
 // case?
 template <typename Dtype>
-void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
+  const Dtype* weight = this->blobs_[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int top_count = top[0]->count();
   // We'll output the mask to top[1] if it's of size >1.
@@ -141,9 +140,8 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
     case PoolingParameter_PoolMethod_VEC: {
-      const Dtype* weight = this->blobs[0]->cpu_data();
       for (int i=0;i<bottom.size();++i){
-        const Dtype* bottom_data = bottom[i]->cpu_data();
+        bottom_data = bottom[i]->cpu_data();
         Dtype* top_data = top[i]->mutable_cpu_data();
         for (int n = 0; n < this->num_; ++n){
           this->forward_cpu_gemm(bottom_data + n * this->bottom_dim_, weight, top_data +n * this->top_dim_);
@@ -281,7 +279,7 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
               this->weight_cpu_gemm(bottom_data + n * this->bottom_dim_, top_diff + n * this->top_dim_, weight_diff);
             }
             if (propagate_down[i]) {
-              this->backward_cpu_gemm(top_diff + n * this->top_dim_,weight, bottom_diff + n * this->bottom_dim_);
+              this->backward_cpu_gemm(top_diff + n * this->top_dim_, weight, bottom_diff + n * this->bottom_dim_);
             }
           }
         }

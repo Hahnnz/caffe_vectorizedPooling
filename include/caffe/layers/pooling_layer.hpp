@@ -6,6 +6,7 @@
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/util/im2col.hpp"
 
 namespace caffe {
 
@@ -25,8 +26,10 @@ class PoolingLayer : public Layer<Dtype> {
       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "Pooling"; }
+  virtual inline int MinBottomBlobs() const { return 1; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline bool EqualNumBottomTopBlobs() const { return true; }
   // MAX POOL layers can output an extra top blob for the mask;
   // others can only output the pooled inputs.
   virtual inline int MaxTopBlobs() const {
@@ -39,6 +42,7 @@ class PoolingLayer : public Layer<Dtype> {
   void forward_cpu_bias(Dtype* output, const Dtype* bias);
   void backward_cpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
+  void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype* weights);
 
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
@@ -50,7 +54,24 @@ class PoolingLayer : public Layer<Dtype> {
   void forward_gpu_bias(Dtype* output, const Dtype* bias);
   void backward_gpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
   void backward_gpu_bias(Dtype* bias, const Dtype* input);
+  void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype* weights);
 #endif
+  inline int input_shape(int i) {
+    return (*bottom_shape_)[channel_axis_ + i];
+  }
+
+  Blob<int> kernel_shape_;
+  Blob<int> stride_;
+  Blob<int> pad_;
+  Blob<int> dilation_;
+  Blob<int> conv_input_shpae_;
+  Blob<int> col_buffer_shape_;
+  Blob<int> output_shpae_;
+  
+  Blob<Dtype> col_buffer_;
+  Blob<Dtype> bias_multiplier_;
+
+  const vector<int>* bottom_shape_;
 
   int channel_axis_;
   int bottom_dim_, top_dim_;
