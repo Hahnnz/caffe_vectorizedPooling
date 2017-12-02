@@ -41,7 +41,7 @@ class PoolingLayer : public Layer<Dtype> {
   void forward_cpu_bias(Dtype* output, const Dtype* bias);
   void backward_cpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
-  void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype* weights);
+  void weight_cpu_gemm(const Dtype* col_input, const Dtype* output, Dtype* weights);
 
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
@@ -58,25 +58,30 @@ class PoolingLayer : public Layer<Dtype> {
   inline int input_shape(int i) {
     return (*bottom_shape_)[channel_axis_ + i];
   }
-
+  
   Blob<int> kernel_shape_;
   Blob<int> stride_;
   Blob<int> pad_;
   Blob<int> dilation_;
-  Blob<int> conv_input_shpae_;
-  Blob<int> col_buffer_shape_;
-  Blob<int> output_shpae_;
+  Blob<int> conv_input_shape_;
+
+  vector<int> col_buffer_shape_;
+  vector<int> output_shape_;
   
   Blob<Dtype> col_buffer_;
   Blob<Dtype> bias_multiplier_;
 
   const vector<int>* bottom_shape_;
 
+  int num_spatial_axes_;
   int channel_axis_;
   int bottom_dim_, top_dim_;
   int num_, groups_;
   int num_output_, bias_term;
   int weight_offset_, out_spatial_dim_;
+  bool bias_term_;
+  bool is_1x1_;
+  bool force_nd_im2col_;
 
   int kernel_h_, kernel_w_;
   int stride_h_, stride_w_;
