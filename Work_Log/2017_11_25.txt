@@ -4,7 +4,7 @@ caffe/src/caffe/test/test_pooling_layer.cpp
 [Role of functions]
 cpu_data() => if there is a data modified in gpu state, return the data's address to cpu.
 mutable_cpu_data() => if there are mutable data modified in gpu state, return the data's address to cpu. 
-
+caffe_set(const int N, const Dtype alpha, Dtype* Y) => if alpha is 0, size of Y is initialized by size N and all the contents of Y are intialized to 0. if not, all the contents of Y are initialized by alpha with size N.
 
 * Jihoon Han
 [WIP]
