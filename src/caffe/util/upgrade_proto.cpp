@@ -331,6 +331,10 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
           layer_param->mutable_pooling_param()->set_pool(
               PoolingParameter_PoolMethod_STOCHASTIC);
           break;
+        case V0LayerParameter_PoolMethod_VEC:
+          layer_param->mutable_pooling_param()->set_pool(
+              PoolingParameter_PoolMethod_VEC);
+          break;
         default:
           LOG(ERROR) << "Unknown pool method " << pool;
           is_fully_compatible = false;
