@@ -8,8 +8,20 @@ mutable_cpu_data() => if there are mutable data modified in gpu state, return th
 
 * Jihoon Han
 [WIP]
-- Building Pooling layer
-  10 errors have remained.
+- Searching how to solve following problem.
+  CXX/LD -o .build_release/tools/upgrade_net_proto_text.bin
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::forward_cpu_bias(float*, float const*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::weight_cpu_gemm(double const*, double const*, double*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::forward_cpu_bias(double*, double const*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::backward_cpu_gemm(double const*, double const*, double*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::backward_cpu_bias(double*, double const*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::backward_cpu_gemm(float const*, float const*, float*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::backward_cpu_bias(float*, float const*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::forward_cpu_gemm(float const*, float const*, float*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::forward_cpu_gemm(double const*, double const*, double*)'
+.build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::weight_cpu_gemm(float const*, float const*, float*)'
+
 [Done]
-- Adding Basic Vectorized pooling Operation.
+- Building pooling layer DONE
+- Added Basic Vectorized pooling Operation.
   Mode Set : VEC
