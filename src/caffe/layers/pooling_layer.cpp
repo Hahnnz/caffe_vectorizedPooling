@@ -136,6 +136,64 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
 // case?
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::forward_cpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output)
+{
+  const Dtype* col_buff = input;
+  if (!is_1x1_)
+    col_buff = col_buffer_.cpu_data();
+  for (int g=0; g < group_; ++g){
+    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, out_channels_ / group_, out_spatial_dim_,
+      kernel_dim_, (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g, (Dtype)0., output + output_offset_ * g);
+  }
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::forward_cpu_bias(Dtype* output, const Dtype* bias)
+{
+  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_, output_spatial_dim_, 1, (Dtype)1., bias,
+    bias_multiplier_.cpu_data(), (Dtype)1., output);
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::backward_cpu_gemm(const Dtype* output, const Dtype* weights, Dtype* input)
+{
+  Dtype* col_buff =col_buffer_.mutable_cpu_data();
+  if (is_1x1_)
+    col_buff = input;
+  for (int g = 0; g < group_; ++g){
+    caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_dim_, out_spatial_dim_, out_channels_ / group_,
+        (Dtype)1., weights + weight_offset_ * g, output + output_offset_ * g, (Dtype)0., col_buff + col_offset_ * g);
+  }
+  if (!is_1x1_) {
+    conv_col2im_cpu(col_buff, input);
+  }
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights)
+{
+  const Dtype* col_buff = input;
+  if (!is_1x1_) {
+    im2col_cpu(input, col_buffer_.mutable_cpu_data());
+    col_buff = col_buffer_.cpu_data();
+  }
+  for (int g = 0; g < group_; ++g) {
+    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasTrans, out_channels_ / group_, kernel_dim_, out_spatial_dim_,
+        (Dtype)1., output + output_offset_ * g, col_buff + col_offset_ * g, (Dtype)1., weights + weight_offset_ * g);
+  }
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::backward_cpu_bias(Dtype* bias, const Dtype* input) {
+  caffe_cpu_gemv<Dtype>(CblasNoTrans, num_output_, out_spatial_dim_, 1., input, bias_multiplier_.cpu_data(), 1., bias);
+}
+
+#ifndef CPU_ONLY
+
+#endif
+
 template <typename Dtype>
 void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
