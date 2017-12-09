@@ -9,19 +9,31 @@ caffe_set(const int N, const Dtype alpha, Dtype* Y) => if alpha is 0, size of Y 
 * Jihoon Han
 [WIP]
 - Searching how to solve following problem.
-  CXX/LD -o .build_release/tools/upgrade_net_proto_text.bin
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::forward_cpu_bias(float*, float const*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::weight_cpu_gemm(double const*, double const*, double*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::forward_cpu_bias(double*, double const*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::backward_cpu_gemm(double const*, double const*, double*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::backward_cpu_bias(double*, double const*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::backward_cpu_gemm(float const*, float const*, float*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::backward_cpu_bias(float*, float const*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::forward_cpu_gemm(float const*, float const*, float*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<double>::forward_cpu_gemm(double const*, double const*, double*)'
-  .build_release/lib/libcaffe.so: undefined reference to `caffe::PoolingLayer<float>::weight_cpu_gemm(float const*, float const*, float*)'
+CXX src/caffe/layers/pooling_layer.cpp
+src/caffe/layers/pooling_layer.cpp: In instantiation of ‘void caffe::PoolingLayer<Dtype>::LayerSetUp(const std::vector<caffe::Blob<Dtype>*>&, const std::vector<caffe::Blob<Dtype>*>&) [with Dtype = float]’:
+src/caffe/layers/pooling_layer.cpp:512:1:   required from here
+src/caffe/layers/pooling_layer.cpp:92:15: error: ‘class caffe::LayerParameter’ has no member named ‘pool_param’
+   num_output_ = this->layer_param_.pool_param().num_output();
+               ^
+src/caffe/layers/pooling_layer.cpp:94:10: error: ‘class caffe::LayerParameter’ has no member named ‘pool_param’
+   group_ = this->layer_param_.pool_param().group();
+          ^
+src/caffe/layers/pooling_layer.cpp: In instantiation of ‘void caffe::PoolingLayer<Dtype>::LayerSetUp(const std::vector<caffe::Blob<Dtype>*>&, const std::vector<caffe::Blob<Dtype>*>&) [with Dtype = double]’:
+src/caffe/layers/pooling_layer.cpp:512:1:   required from here
+src/caffe/layers/pooling_layer.cpp:92:15: error: ‘class caffe::LayerParameter’ has no member named ‘pool_param’
+   num_output_ = this->layer_param_.pool_param().num_output();
+               ^
+src/caffe/layers/pooling_layer.cpp:94:10: error: ‘class caffe::LayerParameter’ has no member named ‘pool_param’
+   group_ = this->layer_param_.pool_param().group();
+          ^
+Makefile:581: recipe for target '.build_release/src/caffe/layers/pooling_layer.o' failed
+make: *** [.build_release/src/caffe/layers/pooling_layer.o] Error 1
 
 [Done]
+- Added following function 
+    [pooling_layer.hpp] pool_im2col_cpu, pool_im2col_gpu, pool_col2im_cpu, pool_col2im_gpu,
+    [pooling_layer.cpp] foward_cpu_gemm, foward_cpu_bias, backward_cpu_gemm, backward_cpu_bias, weight_cpu_gemm
+                        foward_gpu_gemm, foward_gpu_bias, backward_gpu_gemm, backward_gpu_bias, weight_gpu_gemm
 - Building pooling layer DONE
 - Added Basic Vectorized pooling Operation.
   Mode Set : VEC
