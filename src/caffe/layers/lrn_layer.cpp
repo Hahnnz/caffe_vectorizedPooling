@@ -36,8 +36,8 @@ void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     pool_top_vec_.clear();
     pool_top_vec_.push_back(&pool_output_);
     LayerParameter pool_param;
-    pool_param.mutable_pooling_param()->set_pool(
-        PoolingParameter_PoolMethod_AVE);
+    pool_param.mutable_pooling_param()->set_pool(PoolingParameter_PoolMethod_VEC);
+    pool_param.mutable_pooling_param()->set_pool(PoolingParameter_PoolMethod_AVE);
     pool_param.mutable_pooling_param()->set_pad(pre_pad_);
     pool_param.mutable_pooling_param()->set_kernel_size(size_);
     pool_layer_.reset(new PoolingLayer<Dtype>(pool_param));

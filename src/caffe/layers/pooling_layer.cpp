@@ -2,8 +2,10 @@
 #include <cfloat>
 #include <vector>
 
+#include "caffe/filler.hpp"
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/util/im2col.hpp"
 
 namespace caffe {
 
@@ -85,6 +87,23 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const v
     CHECK_LT(pad_h_, kernel_h_);
     CHECK_LT(pad_w_, kernel_w_);
   }
+  // Configure output channels and groups.
+  channels_ = bottom[0]->shape(channel_axis_);
+  num_output_ = this->layer_param_.pool_param().num_output();
+  CHECK_GT(num_output_, 0);
+  group_ = this->layer_param_.pool_param().group();
+  CHECK_EQ(channels_ % group_, 0);
+  CHECK_EQ(num_output_ % group_, 0)
+      << "Number of output should be multiples of group.";
+  if (reverse_dimensions()) {
+    out_channels_ = channels_;
+    in_channels_ = num_output_;
+  } else {
+    out_channels_ = num_output_;
+    in_channels_ = channels_;
+  }
+
+
 }
 
 template <typename Dtype>
@@ -138,22 +157,26 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 // case?
 
 template <typename Dtype>
-void PoolingLayer<Dtype>::forward_cpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output)
+void PoolingLayer<Dtype>::forward_cpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output, bool skip_pool_im2col)
 {
   const Dtype* col_buff = input;
-  if (!is_1x1_)
+  if (!is_1x1_){
+    if (!skip_pool_im2col) {
+      pool_im2col_cpu(input, col_buffer_.mutable_cpu_data());
+    }
     col_buff = col_buffer_.cpu_data();
+  }
   for (int g=0; g < group_; ++g){
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, out_channels_ / group_, out_spatial_dim_,
-      kernel_dim_, (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g, (Dtype)0., output + output_offset_ * g);
+        kernel_dim_, (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g, (Dtype)0., output + output_offset_ * g);
   }
 }
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::forward_cpu_bias(Dtype* output, const Dtype* bias)
 {
-  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_, output_spatial_dim_, 1, (Dtype)1., bias,
-    bias_multiplier_.cpu_data(), (Dtype)1., output);
+  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_, out_spatial_dim_, 1, (Dtype)1., bias,
+      bias_multiplier_.cpu_data(), (Dtype)1., output);
 }
 
 template <typename Dtype>
@@ -167,7 +190,7 @@ void PoolingLayer<Dtype>::backward_cpu_gemm(const Dtype* output, const Dtype* we
         (Dtype)1., weights + weight_offset_ * g, output + output_offset_ * g, (Dtype)0., col_buff + col_offset_ * g);
   }
   if (!is_1x1_) {
-    conv_col2im_cpu(col_buff, input);
+    pool_col2im_cpu(col_buff, input);
   }
 }
 
@@ -176,7 +199,7 @@ void PoolingLayer<Dtype>::weight_cpu_gemm(const Dtype* input, const Dtype* outpu
 {
   const Dtype* col_buff = input;
   if (!is_1x1_) {
-    im2col_cpu(input, col_buffer_.mutable_cpu_data());
+    pool_im2col_cpu(input, col_buffer_.mutable_cpu_data());
     col_buff = col_buffer_.cpu_data();
   }
   for (int g = 0; g < group_; ++g) {
@@ -191,8 +214,65 @@ void PoolingLayer<Dtype>::backward_cpu_bias(Dtype* bias, const Dtype* input) {
 }
 
 #ifndef CPU_ONLY
+template <typename Dtype>
+void PoolingLayer<Dtype>::forward_gpu_gemm(const Dtype* input, const Dtype* weights, Dtype* output, bool skip_pool_im2col)
+{
+  const Dtype* col_buff = input;
+  if (!is_1x1_) {
+    if(!skip_pool_im2col){
+      pool_im2col_gpu(input, col_buffer_.mutable_gpu_data());
+    }
+    col_buff = col_buffer_.gpu_data();
+  }
+  for (int g = 0; g < group_; ++g) {
+    caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, out_channels_ / group_, out_spatial_dim_, kernel_dim_,
+        (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g, (Dtype)0., output + output_offset_ * g);
+  }
+}
 
-#endif
+template <typename Dtype>
+void PoolingLayer<Dtype>::forward_gpu_bias(Dtype* output, const Dtype* bias)
+{
+  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_, out_spatial_dim_, 1,
+      (Dtype)1., bias, bias_multiplier_.gpu_data(), (Dtype)1., output);
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::backward_gpu_gemm(const Dtype* output, const Dtype* weights, Dtype* input)
+{
+  Dtype* col_buff = col_buffer_.mutable_gpu_data();
+  if (is_1x1_) {
+    col_buff = input;
+  }
+  for (int g = 0; g < group_; ++g) {
+    caffe_gpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_dim_, out_spatial_dim_, out_channels_ / group_,
+        (Dtype)1., weights + weight_offset_ * g, output + output_offset_ * g, (Dtype)0., col_buff + col_offset_ * g);
+  }
+  if (!is_1x1_) {
+    pool_col2im_gpu(col_buff, input);
+  }
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::weight_gpu_gemm(const Dtype* input, const Dtype* output, Dtype* weights)
+{
+  const Dtype* col_buff = input;
+  if (!is_1x1_) {
+    pool_im2col_gpu(input, col_buffer_.mutable_gpu_data());
+    col_buff = col_buffer_.gpu_data();
+  }
+  for (int g = 0; g < group_; ++g) {
+    caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, out_channels_ / group_, kernel_dim_, out_spatial_dim_,
+        (Dtype)1., output + output_offset_ * g, col_buff + col_offset_ * g, (Dtype)1., weights + weight_offset_ * g);
+  }
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::backward_gpu_bias(Dtype* bias, const Dtype* input)
+{
+  caffe_gpu_gemv<Dtype>(CblasNoTrans, num_output_, out_spatial_dim_, 1., input, bias_multiplier_.gpu_data(), 1., bias);
+}
+#endif // For GPU
 
 template <typename Dtype>
 void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
