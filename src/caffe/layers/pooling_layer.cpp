@@ -89,9 +89,9 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const v
   }
   // Configure output channels and groups.
   channels_ = bottom[0]->shape(channel_axis_);
-  num_output_ = this->layer_param_.pool_param().num_output();
+  num_output_ = this->layer_param_.pooling_param().num_output();
   CHECK_GT(num_output_, 0);
-  group_ = this->layer_param_.pool_param().group();
+  group_ = this->layer_param_.pooling_param().group();
   CHECK_EQ(channels_ % group_, 0);
   CHECK_EQ(num_output_ % group_, 0)
       << "Number of output should be multiples of group.";
