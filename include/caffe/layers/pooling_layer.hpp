@@ -60,7 +60,7 @@ class PoolingLayer : public Layer<Dtype> {
     return (*bottom_shape_)[channel_axis_ + i];
   }
   virtual inline bool reverse_dimensions() { return false; }
-  //virtual void compute_output_shape();
+  virtual void compute_output_shape();
   
   Blob<int> kernel_shape_;
   Blob<int> stride_;
