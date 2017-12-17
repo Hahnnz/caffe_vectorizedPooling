@@ -62,7 +62,8 @@ layer {
   bottom: "conv1"
   top: "pool1"
   pooling_param {
-    pool: MAX
+    num_output: 20
+    pool: VEC
     kernel_size: 2
     stride: 2
   }

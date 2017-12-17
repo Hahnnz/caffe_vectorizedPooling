@@ -306,6 +306,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const 
     case PoolingParameter_PoolMethod_VEC: {
       for (int i=0;i<bottom.size();++i){
         bottom_data = bottom[i]->cpu_data();
+        top_data = top[i]->mutable_cpu_data();
         for (int n = 0; n < this->num_; ++n){
           this->forward_cpu_gemm(bottom_data + n * this->bottom_dim_, weight, top_data +n * this->top_dim_);
           if(this->bias_term_) {
