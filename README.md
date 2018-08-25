@@ -3,14 +3,7 @@
 Caffe is a deep learning framework made with expression, speed, and modularity in mind.
 It is developed by Berkeley AI Research ([BAIR](http://bair.berkeley.edu))/The Berkeley Vision and Learning Center (BVLC) and community contributors.
 
-## School Project [WIP]
-This is For School Project. [OpenSourceSoftWare]
-### Team Member
-
-###### [ChiHyun Ahn, dept of Computer Information Communication Eng, Hongik Univ](https://github.com/accomplishedboy)
-
-###### [JiHoon Han, dept of Computer Information Communication Eng, Hongik Univ](https://github.com/Hahnnz)
-### What we will do
+### What is it?
 At pooling step, pooling has output Max value that is biggest among activate nodes in kernel or Average value
 However, as domain goes, we cannot grant Max pooling or Ave pooling extract good feature to train data
 
@@ -19,7 +12,7 @@ So We Propose Another new way beside Max & Ave pooling
 Based on previously existing Max & Average Pooling we will Make Operation Vectorizing With adding Weights
 
 
-### What we expect from this project
+### What is it good?
  - <b> Enable to extract MORE effective feature when learn it </b> 
    
    For Each Kernel node, Weights vector can weight heavily if it looks important or get lighter even get 0 to make it unable to join operation if it looks not good or bad  
